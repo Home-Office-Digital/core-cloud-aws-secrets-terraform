@@ -7,7 +7,7 @@ variable "aws_secrets" {
     github_repos_to_allow = optional(list(object({     # List of the git repositories to be allowed access to the secret
       repo_name = string                               # Name of the git repository without https or git@ and without the '.git' suffix
       github_organisation = optional(
-        string, "UKHomeOffice" # Name of the github organisation.
+        string, "Home-Office-Digital" # Name of the github organisation.
       )
       branch_ref = optional(string, "*") # Branch allowed to access the secret; ideally should me 'main'
     })), [])
