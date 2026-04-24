@@ -3,7 +3,7 @@ kind: Component
 metadata:
   name: core-cloud-aws-secrets-terraform
   annotations:
-    github.com/project-slug: UKHomeOffice/core-cloud-aws-secrets-terraform
+    github.com/project-slug: Home-Office-Digital/core-cloud-aws-secrets-terraform
 spec:
   type: service
   owner: core-cloud-devops
