@@ -164,6 +164,10 @@ output "secret_id" {
   value = aws_secretsmanager_secret.this_secret.id
 }
 
+output "kms_key_rotation_enabled" {
+  value = aws_kms_key.secrets.enable_key_rotation
+}
+
 resource "aws_iam_policy" "access_to_secret_kms" {
   name =  "cc-access-to-kms-${local.secret_name}"
   policy = jsonencode({
