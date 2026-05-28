@@ -9,8 +9,7 @@ provider "aws" {
 }
 
 override_data {
-  target          = data.aws_caller_identity.this_account
-  override_during = plan
+  target = data.aws_caller_identity.this_account
 
   values = {
     account_id = "123456789012"
@@ -21,8 +20,7 @@ override_data {
 }
 
 override_data {
-  target          = data.aws_region.this_region
-  override_during = plan
+  target = data.aws_region.this_region
 
   values = {
     name = "eu-west-2"
