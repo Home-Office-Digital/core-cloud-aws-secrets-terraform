@@ -19,14 +19,6 @@ override_data {
   }
 }
 
-override_data {
-  target = data.aws_region.this_region
-
-  values = {
-    name = "eu-west-2"
-  }
-}
-
 variables {
   aws_secrets = {
     "test-secret" = {
