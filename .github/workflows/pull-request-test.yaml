@@ -7,7 +7,7 @@ on:
     paths:
       - "*.tf"
       - "secret_and_role/**"
-      - ".github/workflows/terraform-tests.yaml"
+      - ".github/workflows/pull-request-test.yaml"
   push:
     branches: [main]
   workflow_dispatch:
