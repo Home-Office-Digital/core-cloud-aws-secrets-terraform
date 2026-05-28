@@ -8,9 +8,28 @@ provider "aws" {
   skip_requesting_account_id  = true
 }
 
+override_data {
+  target          = data.aws_caller_identity.this_account
+  override_during = plan
+
+  values = {
+    account_id = "123456789012"
+    arn        = "arn:aws:iam::123456789012:user/terraform-test"
+    id         = "123456789012"
+    user_id    = "AIDATERRAFORMTEST"
+  }
+}
+
+override_data {
+  target          = data.aws_region.this_region
+  override_during = plan
+
+  values = {
+    name = "eu-west-2"
+  }
+}
+
 variables {
-  aws_account_id     = "123456789012"
-  aws_account_region = "eu-west-2"
   aws_secrets = {
     "test-secret" = {
       secret_description    = "Test secret"
@@ -35,7 +54,7 @@ run "plan_kms_key_rotation_is_enabled" {
   command = plan
 
   assert {
-    condition     = aws_kms_key.secrets.enable_key_rotation
+    condition     = module.secret_and_role["test-secret"].kms_key_rotation_enabled
     error_message = "KMS key rotation must be enabled."
   }
 }

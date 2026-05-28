@@ -7,6 +7,7 @@ on:
     paths:
       - "*.tf"
       - "secret_and_role/**"
+      - "tests/**"
       - ".github/workflows/pull-request-test.yaml"
   push:
     branches: [main]
@@ -88,16 +89,16 @@ jobs:
         run: exit 1
 
       - name: Terraform Init
-        run: terraform -chdir=secret_and_role init -backend=false
+        run: terraform init -backend=false
 
       - name: Terraform Validate
-        run: terraform -chdir=secret_and_role validate -no-color
+        run: terraform validate -no-color
 
       - name: Block apply-based tests
         shell: bash
         run: |
           set -euo pipefail
-          if grep -R --line-number --include="*.tftest.hcl" 'command *= *apply' secret_and_role/tests/; then
+          if grep -R --line-number --include="*.tftest.hcl" 'command *= *apply' tests/; then
             echo "::error::Apply-based Terraform tests are not allowed in CI."
             exit 1
           fi
@@ -107,7 +108,7 @@ jobs:
         shell: bash
         run: |
           set +e
-          terraform -chdir=secret_and_role test -verbose -no-color 2>&1 | tee test_output.txt
+          terraform test -verbose -no-color 2>&1 | tee test_output.txt
           TEST_EXIT_CODE=${PIPESTATUS[0]}
 
           PASSED=$(grep -c "^  run " test_output.txt || true)
