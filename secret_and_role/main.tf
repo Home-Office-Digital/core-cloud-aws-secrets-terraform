@@ -3,7 +3,7 @@ locals {
 }
 resource "aws_iam_role" "secret_iam_role" {
   count = length(var.aws_secrets[local.secret_name].github_repos_to_allow) > 0 ? 1 : 0
-  name = "cc-observability-secret-${local.secret_name}-role"
+  name  = "cc-observability-secret-${local.secret_name}-role"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -84,8 +84,8 @@ data "aws_iam_policy_document" "secrets_kms" {
       type = "AWS"
       identifiers = concat(
         length(aws_iam_role.secret_iam_role) > 0
-          ? ["arn:aws:iam::${var.aws_account_id}:role/${aws_iam_role.secret_iam_role[0].name}"]
-          : [],
+        ? ["arn:aws:iam::${var.aws_account_id}:role/${aws_iam_role.secret_iam_role[0].name}"]
+        : [],
         formatlist("arn:aws:iam::${var.aws_account_id}:role/%s", var.aws_secrets[local.secret_name].iam_roles),
         ["arn:aws:iam::${var.aws_account_id}:role/dynatrace-eks-ext-secrets"]
       )
@@ -145,16 +145,16 @@ resource "aws_secretsmanager_secret" "this_secret" {
       Effect = "Allow"
       Principal = {
         AWS = concat(
-          length(aws_iam_role.secret_iam_role) > 0 ? ["arn:aws:iam::${var.aws_account_id}:role/${aws_iam_role.secret_iam_role[0].name}"] : [], 
+          length(aws_iam_role.secret_iam_role) > 0 ? ["arn:aws:iam::${var.aws_account_id}:role/${aws_iam_role.secret_iam_role[0].name}"] : [],
           formatlist("arn:aws:iam::${var.aws_account_id}:role/%s", var.aws_secrets[local.secret_name].iam_roles)
-          )
+        )
       }
       Action = [
-          "secretsmanager:GetResourcePolicy",
-          "secretsmanager:GetSecretValue",
-          "secretsmanager:DescribeSecret",
-          "secretsmanager:ListSecretVersionIds"
-        ],
+        "secretsmanager:GetResourcePolicy",
+        "secretsmanager:GetSecretValue",
+        "secretsmanager:DescribeSecret",
+        "secretsmanager:ListSecretVersionIds"
+      ],
       Resource = "*"
     }]
   })
@@ -164,33 +164,37 @@ output "secret_id" {
   value = aws_secretsmanager_secret.this_secret.id
 }
 
+output "kms_key_rotation_enabled" {
+  value = aws_kms_key.secrets.enable_key_rotation
+}
+
 resource "aws_iam_policy" "access_to_secret_kms" {
-  name =  "cc-access-to-kms-${local.secret_name}"
+  name = "cc-access-to-kms-${local.secret_name}"
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
-        {    
-            Action = [
-              "kms:DescribeKey",
-              "kms:Decrypt",
-              "kms:ListAliases"
-            ]
-            Effect = "Allow"
-            Resource = aws_kms_key.secrets.arn
-        }
-      ]
+      {
+        Action = [
+          "kms:DescribeKey",
+          "kms:Decrypt",
+          "kms:ListAliases"
+        ]
+        Effect   = "Allow"
+        Resource = aws_kms_key.secrets.arn
+      }
+    ]
   })
   tags = var.aws_secrets[local.secret_name].tags
 }
 
 resource "aws_iam_role_policy_attachment" "attach_kms_access_policy" {
-  count = length(var.aws_secrets[local.secret_name].github_repos_to_allow) > 0 ? 1 : 0
-  role = aws_iam_role.secret_iam_role[0].name
+  count      = length(var.aws_secrets[local.secret_name].github_repos_to_allow) > 0 ? 1 : 0
+  role       = aws_iam_role.secret_iam_role[0].name
   policy_arn = aws_iam_policy.access_to_secret_kms.arn
 }
 
 resource "aws_iam_role_policy_attachment" "attach_kms_access_policy_iam_roles" {
-  for_each = toset(var.aws_secrets[local.secret_name].iam_roles)
-  role = each.key
+  for_each   = toset(var.aws_secrets[local.secret_name].iam_roles)
+  role       = each.key
   policy_arn = aws_iam_policy.access_to_secret_kms.arn
 }
